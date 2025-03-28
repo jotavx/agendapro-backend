@@ -68,7 +68,35 @@ const scheduleReminder = (req, res) => {
       .json({ error: "userId, phone, mensaje y fecha son requeridos" });
   }
 
-  const date = new Date(datetime);
+  // const date = new Date(datetime);
+  // const cronTime = `${date.getUTCMinutes()} ${date.getUTCHours()} ${date.getUTCDate()} ${
+  //   date.getUTCMonth() + 1
+  // } *`;
+
+  // const job = cron.schedule(
+  //   cronTime,
+  //   async () => {
+  //     try {
+  //       // Obtener el número de WhatsApp correcto dependiendo del plan
+  //       const whatsappNumber = await getWhatsappNumber(userId);
+
+  //       await client.messages.create({
+  //         from: `whatsapp:${whatsappNumber}`,
+  //         to: `whatsapp:${phone}`,
+  //         body: message,
+  //       });
+  //     } catch (error) {
+  //       console.error("Error enviando recordatorio:", error);
+  //     }
+  //   },
+  //   { scheduled: true, timezone: "UTC" }
+  // );
+
+  const date = new Date(datetime); // datetime ya está en hora Argentina
+
+  // Convertir de Argentina (UTC-3) a UTC sumando 3 horas
+  date.setHours(date.getHours() + 3);
+
   const cronTime = `${date.getUTCMinutes()} ${date.getUTCHours()} ${date.getUTCDate()} ${
     date.getUTCMonth() + 1
   } *`;
@@ -77,9 +105,7 @@ const scheduleReminder = (req, res) => {
     cronTime,
     async () => {
       try {
-        // Obtener el número de WhatsApp correcto dependiendo del plan
         const whatsappNumber = await getWhatsappNumber(userId);
-
         await client.messages.create({
           from: `whatsapp:${whatsappNumber}`,
           to: `whatsapp:${phone}`,
@@ -89,7 +115,7 @@ const scheduleReminder = (req, res) => {
         console.error("Error enviando recordatorio:", error);
       }
     },
-    { scheduled: true, timezone: "UTC" }
+    { scheduled: true, timezone: "UTC" } // Siempre en UTC
   );
 
   scheduledReminders.push(job);
